@@ -240,6 +240,12 @@ func commandBuild(build Build) *exec.Cmd {
 		}
 	}
 
+	if len(build.LabelsEnvMap) > 0 {
+		for labelName, envName := range build.LabelsEnvMap {
+			args = append(args, "--label", getLabelFromEnv(labelName, envName))
+		}
+	}
+
 	return exec.Command(dockerExe, args...)
 }
 
@@ -284,6 +290,17 @@ func hasProxyBuildArg(build *Build, key string) bool {
 	}
 
 	return false
+}
+
+// helper function to return custom label arg (k=v) from env
+func getLabelFromEnv(key string, envName string) string {
+	value, ok := os.LookupEnv(envName)
+
+	if !ok {
+		value = "undefined"
+	}
+
+	return fmt.Sprintf("%s=%s", key, value)
 }
 
 // helper function to create the docker tag command.
